@@ -5,6 +5,9 @@ import { TOWER_ANIMATION_CSS } from './animations';
 import { computeTowers, type TowerData } from './layout';
 import { sanitizeFont, sanitizeHexColor, sanitizeRadius } from './sanitizer';
 
+const SVG_WIDTH = 600;
+const SVG_HEIGHT = 420;
+
 const FONT_MAP: Record<string, string> = {
   jetbrains: '"JetBrains Mono", monospace',
   fira: '"Fira Code", monospace',
@@ -13,8 +16,8 @@ const FONT_MAP: Record<string, string> = {
 
 // helpers
 function getSizeScale(size?: 'small' | 'medium' | 'large'): number {
-  if (size === 'small') return 400 / 600;
-  if (size === 'large') return 800 / 600;
+  if (size === 'small') return 400 / SVG_WIDTH;
+  if (size === 'large') return 800 / SVG_WIDTH;
   return 1; // medium (default)
 }
 
@@ -211,8 +214,8 @@ export function generateSVG(
   const sf = getSizeScale(params.size);
   const radius = sanitizeRadius(params.radius, 8) * sf;
   const labels = getLabels(params.lang);
-  const W = Math.round(600 * sf);
-  const H = Math.round(420 * sf);
+  const W = Math.round(SVG_WIDTH * sf);
+  const H = Math.round(SVG_HEIGHT * sf);
 
   const towerData = scaleTowerData(computeTowers(calendar, params.scale, stats.todayDate), sf);
   const towers = renderTowers(towerData, accent, text, sf);
@@ -245,8 +248,8 @@ function generateAutoThemeSVG(
   const radius = sanitizeRadius(params.radius, 8) * sf;
   const labels = getLabels(params.lang);
 
-  const W = Math.round(600 * sf);
-  const H = Math.round(420 * sf);
+  const W = Math.round(SVG_WIDTH * sf);
+  const H = Math.round(SVG_HEIGHT * sf);
   const towerData = scaleTowerData(computeTowers(calendar, params.scale, stats.todayDate), sf);
   let towers = '';
 
@@ -595,9 +598,9 @@ export function generateNotFoundSVG(
 
   return `<svg
   xmlns="http://www.w3.org/2000/svg"
-  width="600"
-  height="420"
-  viewBox="0 0 600 420"
+  width="${SVG_WIDTH}"
+  height="${SVG_HEIGHT}"
+  viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}"
   fill="none"
   role="img"
 >
@@ -629,7 +632,7 @@ export function generateNotFoundSVG(
   </style>
 
   <!-- Background -->
-  <rect width="600" height="420" rx="${radius}" fill="${bg}"/>
+  <rect width="${SVG_WIDTH}" height="${SVG_HEIGHT}" rx="${radius}" fill="${bg}"/>
 
   <!-- Ghost isometric city — same grid as real badge -->
   <g transform="translate(0, 20)" class="ghost-pulse">
@@ -637,7 +640,7 @@ export function generateNotFoundSVG(
   </g>
 
   <!-- Fade overlay so ghost city dissolves into background -->
-  <rect width="600" height="420" rx="${radius}" fill="url(#ghostFade)"/>
+  <rect width="${SVG_WIDTH}" height="${SVG_HEIGHT}" rx="${radius}" fill="url(#ghostFade)"/>
 
   <!-- Radar scan line (same as real badge, but very faint) -->
   <rect x="100" y="60" width="400" height="1" fill="${accent}" fill-opacity="0.12">
