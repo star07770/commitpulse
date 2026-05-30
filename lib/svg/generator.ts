@@ -522,7 +522,7 @@ export function generateSVG(
   const mainAccentHex = mainAccent.startsWith('#') ? mainAccent : `#${mainAccent}`;
 
   return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ${W} ${H}" fill="none" role="img">
   ${renderHeader(safeUser, stats, sf, params)}
   ${renderStyle(selectedFont, statsFont, googleFontsImport, text, mainAccentHex, sf, bg)}
   <rect width="${W}" height="${H}" rx="${radius}" fill="${params.hideBackground ? 'transparent' : bg}" ${borderAttr} />
@@ -572,8 +572,7 @@ function generateAutoThemeSVG(
   return `
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  width="${W}"
-  height="${H}"
+  width="100%"
   viewBox="0 0 ${W} ${H}"
   fill="none"
   role="img"
@@ -931,13 +930,13 @@ export function generateWrappedSVG(
 
   .title-user { font-family: ${selectedFont || '"Syncopate", sans-serif'}; font-weight: 700; font-size: 13px; letter-spacing: 2.5px; opacity: 0.85; }
   .title-wrapped { font-family: ${selectedFont || '"Syncopate", sans-serif'}; font-weight: 700; font-size: 13px; letter-spacing: 2.5px; }
-  
+ 
   .total-commits { font-family: ${statsFont}; font-size: 46px; font-weight: 700; }
   .total-label { font-family: "Roboto", sans-serif; font-size: 9.5px; font-weight: 700; letter-spacing: 1.5px; opacity: 0.5; }
-  
+ 
   .grid-label { font-family: "Roboto", sans-serif; font-size: 9px; font-weight: 700; letter-spacing: 1.5px; opacity: 0.5; }
   .grid-val { font-family: ${statsFont}; font-size: 14.5px; font-weight: 600; }
-  
+ 
   .scan-line {
     animation: scan-sweep var(--scan-speed, 8s) linear infinite;
     transform-box: fill-box;
@@ -954,12 +953,10 @@ export function generateWrappedSVG(
 
   <rect width="420" height="260" rx="${radius}" ${rectFill} ${borderStroke} />
 
-  <!-- Background holographic mini-monolith -->
   <g opacity="0.8">
     ${bgTowersMarkup}
   </g>
 
-  <!-- Horizontal holographic scan-line -->
   <rect
     x="15"
     y="15"
@@ -971,48 +968,37 @@ export function generateWrappedSVG(
     style="--scan-speed: ${params.speed || '8s'};"
   />
 
-  <!-- Header -->
   <g transform="translate(25, 45)">
     <text x="0" y="0" class="title-user" ${textClass}>${safeUser.toUpperCase()}'S GRIND</text>
     <text x="370" y="0" text-anchor="end" class="title-wrapped" ${accentClass}>${year} WRAPPED</text>
     <line x1="0" y1="12" x2="370" y2="12" stroke="${params.autoTheme ? 'var(--cp-accent)' : accent}" stroke-opacity="0.15" stroke-width="1" />
   </g>
 
-  <!-- Left Stats Block (Total contributions) -->
   <g transform="translate(25, 120)">
     <text x="0" y="15" class="total-commits" ${accentClass} filter="url(#glow)">${stats.totalContributions}</text>
     <text x="2" y="38" class="total-label" ${textClass}>TOTAL CONTRIBUTIONS</text>
   </g>
 
-  <!-- Vertical Divider -->
   <line x1="185" y1="80" x2="185" y2="230" stroke="${params.autoTheme ? 'var(--cp-accent)' : accent}" stroke-opacity="0.12" stroke-width="1" stroke-dasharray="3 3" />
 
-  <!-- Right Section: 2x2 Spaced Grid -->
-  <!-- Row 1: Top Language (Col 1) and Weekend Grind (Col 2) -->
   <g transform="translate(210, 80)">
-    <!-- Top Language -->
     <g transform="translate(0, 20)">
       <text x="0" y="0" class="grid-label" ${textClass}>TOP LANGUAGE</text>
       <text x="0" y="20" class="grid-val" ${accentClass}>${stats.topLanguage || 'Unknown'}</text>
     </g>
 
-    <!-- Weekend Grind Progress Arc -->
     <g transform="translate(130, 20)">
       <text x="0" y="0" class="grid-label" ${textClass}>WEEKEND GRIND</text>
       <g transform="translate(25, 24)">
-        <!-- Background Track -->
         <circle cx="0" cy="0" r="14" stroke="${params.autoTheme ? 'var(--cp-text)' : text}" stroke-opacity="0.1" stroke-width="2.5" fill="none" />
-        <!-- Progress Bar -->
         <circle cx="0" cy="0" r="14" stroke="${params.autoTheme ? 'var(--cp-accent)' : accent}" stroke-width="3" fill="none"
                 stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${strokeDashoffset.toFixed(2)}"
                 stroke-linecap="round" transform="rotate(-90)" />
-        <!-- Text inside progress circle -->
         <text x="0" y="3.5" text-anchor="middle" font-family="${statsFont}" font-size="9" font-weight="700" ${textClass}>${clampedRatio}%</text>
       </g>
     </g>
   </g>
 
-  <!-- Row 2: Peak Day -->
   <g transform="translate(210, 150)">
     <text x="0" y="0" class="grid-label" ${textClass}>PEAK DAY</text>
     <text x="0" y="20" class="grid-val" ${textClass}>
@@ -1021,7 +1007,6 @@ export function generateWrappedSVG(
     </text>
   </g>
 
-  <!-- Row 3: Busiest Month -->
   <g transform="translate(210, 205)">
     <text x="0" y="0" class="grid-label" ${textClass}>BUSIEST MONTH</text>
     <text x="0" y="20" class="grid-val" ${textClass}>
@@ -1104,7 +1089,7 @@ function generateAutoThemeMonthlySVG(stats: MonthlyStats, params: BadgeParams): 
   .cp-text-fill { fill: var(--cp-text); color: var(--cp-text); } 
   .cp-accent-fill { fill: var(--cp-accent); color: var(--cp-accent); }
   .cp-delta-fill { fill: ${stats.deltaAbsolute >= 0 ? 'var(--cp-accent)' : 'var(--cp-negative)'}; }
-  
+ 
   .title { font-family: ${selectedFont || '"Syncopate", sans-serif'}; fill: var(--cp-text); font-size: 14px; letter-spacing: 2px; font-weight: 400; opacity: 0.8; }
   .stats { font-family: ${statsFont}; fill: var(--cp-accent); font-size: 36px; font-weight: 600; letter-spacing: 0; }
   .label { font-family: "Roboto", sans-serif; fill: var(--cp-text); font-size: 10px; font-weight: 400; letter-spacing: 1px; opacity: 0.7; }
@@ -1210,8 +1195,7 @@ export function generateNotFoundSVG(
 
   return `<svg
   xmlns="http://www.w3.org/2000/svg"
-  width="${SVG_WIDTH}"
-  height="${SVG_HEIGHT}"
+  width="100%"
   viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}"
   fill="none"
   role="img"
@@ -1360,13 +1344,13 @@ export function generateVersusSVG(
   const unit = params.mode === 'loc' ? 'lines of code' : 'total contributions';
 
   return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ${W} ${H}" fill="none" role="img">
   <title>CommitPulse Versus Stats: ${safeUser1} vs ${safeUser2}</title>
   <desc>${safeUser1} has ${stats1.totalContributions} ${unit}. ${safeUser2} has ${stats2.totalContributions} ${unit}.</desc>
   ${renderDefs(sf, params)}
   ${renderStyle(selectedFont, statsFont, googleFontsImport, text, accent, sf, bg)}
   <rect width="${W}" height="${H}" rx="${radius}" fill="${params.hideBackground ? 'transparent' : bg}" />
-  
+ 
   <g transform="translate(0, 0)">
     <g transform="translate(0, ${Math.round(20 * sf)})">${towers1}</g>
     ${renderIsometricLabels(calendar1, params, text, sf)}
@@ -1380,7 +1364,7 @@ export function generateVersusSVG(
   </g>
 
   <line x1="${singleW}" y1="${s(40)}" x2="${singleW}" y2="${H - s(40)}" stroke="${text}" stroke-opacity="0.2" stroke-width="2" stroke-dasharray="4 4" />
-  
+ 
   <g transform="translate(${singleW}, ${H / 2})">
     <circle cx="0" cy="0" r="${s(24)}" fill="${bg}" stroke="${accent}" stroke-width="2" />
     <text x="0" y="${s(6)}" text-anchor="middle" font-family="${statsFont}" fill="${accent}" font-size="${s(16)}" font-weight="bold">VS</text>
@@ -1497,11 +1481,11 @@ function generateAutoThemeVersusSVG(
   const unit = params.mode === 'loc' ? 'lines of code' : 'total contributions';
 
   return `
-<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" fill="none" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" width="100%" viewBox="0 0 ${W} ${H}" fill="none" role="img">
   <title>CommitPulse Versus Stats: ${safeUser1} vs ${safeUser2}</title>
   <desc>${safeUser1} has ${stats1.totalContributions} ${unit}. ${safeUser2} has ${stats2.totalContributions} ${unit}.</desc>
   ${renderDefs(sf, params)}
-  
+ 
   <style>
   @import url('https://fonts.googleapis.com/css2?family=Fira+Code&amp;family=JetBrains+Mono&amp;family=Roboto&amp;family=Syncopate:wght@400;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap');
   :root { --cp-bg: #${light.bg}; --cp-text: #${light.text}; --cp-accent: #${light.accent}; --cp-label-fill: ${lightLabelFill}; --cp-label-opacity: ${lightLabelOpacity}; }
@@ -1534,7 +1518,7 @@ function generateAutoThemeVersusSVG(
   </style>
 
   <rect width="${W}" height="${H}" rx="${radius}" class="${params.hideBackground ? '' : 'cp-bg-fill'}" fill="${params.hideBackground ? 'transparent' : ''}" />
-  
+ 
   <g transform="translate(0, 0)">
     <g transform="translate(0, ${Math.round(20 * sf)})">${towers1}</g>
     ${renderIsometricLabels(calendar1, params, '', sf)}
@@ -1548,7 +1532,7 @@ function generateAutoThemeVersusSVG(
   </g>
 
   <line x1="${singleW}" y1="${s(40)}" x2="${singleW}" y2="${H - s(40)}" stroke="var(--cp-text)" stroke-opacity="0.2" stroke-width="2" stroke-dasharray="4 4" />
-  
+ 
   <g transform="translate(${singleW}, ${H / 2})">
     <circle cx="0" cy="0" r="${s(24)}" class="cp-bg-fill" stroke="var(--cp-accent)" stroke-width="2" />
     <text x="0" y="${s(6)}" text-anchor="middle" font-family="${statsFont}" class="cp-accent-fill" font-size="${s(16)}" font-weight="bold">VS</text>
@@ -1614,8 +1598,7 @@ export function generateRateLimitSVG(
 
   return `<svg
   xmlns="http://www.w3.org/2000/svg"
-  width="${SVG_WIDTH}"
-  height="${SVG_HEIGHT}"
+  width="100%"
   viewBox="0 0 ${SVG_WIDTH} ${SVG_HEIGHT}"
   fill="none"
   role="img"
@@ -1662,7 +1645,6 @@ export function generateRateLimitSVG(
 
   <rect x="180" y="62" width="240" height="1" fill="${accent}" fill-opacity="0.15"/>
 
-  <!-- Warning mark -->
   <circle cx="300" cy="190" r="32" fill="none"
     stroke="${accent}" stroke-width="1.2" stroke-opacity="0.3" filter="url(#softglow)"/>
   <path d="M300 172 V200 M300 210 V210.1"
