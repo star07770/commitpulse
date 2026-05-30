@@ -386,3 +386,28 @@ describe('calculateStreak — empty and sparse year edge cases', () => {
     expect(result.totalContributions).toBe(2);
   });
 });
+it('handles different week start days correctly', () => {
+  // Simulating 2 full weeks (Sunday start vs Monday start shouldn't break logic)
+  const calendar = buildCalendar([
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1, // week 1
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1, // week 2
+  ]);
+
+  const result = calculateStreak(calendar);
+
+  expect(result.currentStreak).toBe(14);
+  expect(result.longestStreak).toBe(14);
+  expect(result.totalContributions).toBe(14);
+});
