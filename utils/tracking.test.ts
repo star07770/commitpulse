@@ -62,4 +62,20 @@ describe('trackUser', () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+     it('reports format error for non-serializable JSON payload', () => {
+    const consoleErrorMock = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const payload: Record<string, unknown> = {};
+    payload.self = payload;
+
+    trackUser(payload as unknown as string);
+
+    expect(consoleErrorMock).toHaveBeenCalledWith(
+      'Failed to format tracking payload',
+      expect.any(TypeError),
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
 });
