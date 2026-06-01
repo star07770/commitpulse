@@ -15,6 +15,8 @@
     "copyright": "© {{year}} CommitPulse. All rights reserved."
   },
   "landing": {
+    "empty_username_warning": "Please enter a GitHub username to copy your badge link.",
+    "max_length_warning": "GitHub username limit reached (39 characters maximum)",
     "title": "Elevate Your\nContribution Story.",
     "subtitle": "Stop settling for flat grids. Generate high-fidelity, 3D isometric monoliths that visualize your coding rhythm with professional precision.",
     "watch_dashboard": "Watch Dashboard",
@@ -84,13 +86,21 @@
       "sync_year": "Sync Year",
       "clear_custom": "Clear Custom Colors",
       "theme_presets": "Theme Preset",
-      "color_overrides": "Custom Color Overrides"
+      "color_overrides": "Custom Color Overrides",
+      "font": "Font",
+      "custom_font_option": "Custom Google Font...",
+      "custom_font_placeholder": "e.g. Orbitron, Space Mono, Inter"
     },
     "export": {
       "snippet_title": "Export Snippet",
       "snippet_desc": "Switch formats without changing the live badge configuration.",
       "markdown": "Markdown",
       "html": "HTML",
+      "action": "GitHub Action",
+      "download_badge": "Download Badge",
+      "downloading": "Downloading...",
+      "download_not_available": "Download Not Available",
+      "copy_workflow": "Copy workflow",
       "copy_format": "Copy {{format}}",
       "copied": "Copied!",
       "copy_aria_disabled": "Add a GitHub username to enable copying the {{format}} export snippet",

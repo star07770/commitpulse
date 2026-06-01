@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import { SIZES, SPEEDS, type BadgeSize, type Scale } from '../types';
+import { FONTS, SIZES, SPEEDS, type BadgeSize, type Font, type Scale } from '../types';
 import { isValidHex, stripHash } from '../utils';
 import { SectionLabel } from './SectionLabel';
 import { StyledSelect, ThemeSelector } from './ThemeSelector';
@@ -86,6 +86,7 @@ export function ControlsPanel({
   textHex,
   scale,
   speed,
+  font,
   year,
   radius,
   size,
@@ -96,6 +97,7 @@ export function ControlsPanel({
   onTextHexChange,
   onScaleChange,
   onSpeedChange,
+  onFontChange,
   onYearChange,
   onSizeChange,
   onClearOverrides,
@@ -108,6 +110,7 @@ export function ControlsPanel({
   textHex: string;
   scale: Scale;
   speed: string;
+  font: Font;
   year: string;
   radius: number;
   size: BadgeSize;
@@ -118,6 +121,7 @@ export function ControlsPanel({
   onTextHexChange: (value: string) => void;
   onScaleChange: (value: Scale) => void;
   onSpeedChange: (value: string) => void;
+  onFontChange: (value: Font) => void;
   onYearChange: (value: string) => void;
   onSizeChange: (value: BadgeSize) => void;
   onClearOverrides: () => void;
@@ -269,6 +273,39 @@ export function ControlsPanel({
               ))}
             </StyledSelect>
           </div>
+        </ControlRow>
+
+        <ControlRow label={t('customize.controls.font')}>
+          <div className="relative">
+            <StyledSelect
+              id="font-select"
+              value={FONTS.some((f) => f.value === font) ? font : 'custom'}
+              onChange={(v) => {
+                if (v === 'custom') {
+                  onFontChange('' as Font);
+                } else {
+                  onFontChange(v as Font);
+                }
+              }}
+            >
+              {FONTS.map((fontOption) => (
+                <option key={fontOption.value} value={fontOption.value}>
+                  {fontOption.label}
+                </option>
+              ))}
+              <option value="custom">{t('customize.controls.custom_font_option')}</option>
+            </StyledSelect>
+          </div>
+          {!FONTS.some((f) => f.value === font) && (
+            <input
+              id="font-custom-input"
+              type="text"
+              value={font}
+              onChange={(e) => onFontChange(e.target.value as Font)}
+              placeholder={t('customize.controls.custom_font_placeholder')}
+              className="w-full bg-gray-100/80 backdrop-blur-md border border-black/10 dark:bg-white/[0.03] dark:bg-white/10 rounded-xl px-4 py-2.5 text-sm font-mono text-black dark:text-emerald-300 placeholder:text-gray-400 dark:placeholder:text-white/60 outline-none focus:border-emerald-500/50 transition-colors mt-2"
+            />
+          )}
         </ControlRow>
 
         <ControlRow label={t('customize.controls.radius')}>

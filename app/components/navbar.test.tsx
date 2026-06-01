@@ -59,9 +59,17 @@ vi.mock('lucide-react', () => ({
 
 describe('Navbar mobile menu', () => {
   beforeEach(() => {
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: vi.fn(),
+        setItem: vi.fn(),
+        clear: vi.fn(),
+      },
+      writable: true,
+    });
     window.innerWidth = 500;
     mockMatchMedia(false);
-    window.localStorage.clear();
+    window.localStorage?.clear();
     document.documentElement.className = '';
   });
 
@@ -107,8 +115,16 @@ describe('Navbar mobile menu', () => {
 
 describe('Navbar responsive breakpoints', () => {
   beforeEach(() => {
+    Object.defineProperty(window, 'localStorage', {
+      value: {
+        getItem: vi.fn(),
+        setItem: vi.fn(),
+        clear: vi.fn(),
+      },
+      writable: true,
+    });
     window.innerWidth = 500;
-    window.localStorage.clear();
+    window.localStorage?.clear();
     document.documentElement.className = '';
   });
 
@@ -150,5 +166,28 @@ describe('Navbar responsive breakpoints', () => {
       'false'
     );
     expect(screen.getAllByRole('link', { name: /github repo/i })).toHaveLength(1);
+  });
+
+  it('should verify responsive rendering and elements of Navbar (Variation 1) by toggling hamburger menu state smoothly', () => {
+    window.innerWidth = 375;
+    mockMatchMedia(false);
+
+    render(<Navbar />);
+
+    const toggleButton = screen.getByRole('button', { name: /open menu/i });
+    expect(toggleButton).toBeTruthy();
+    expect(toggleButton.getAttribute('aria-expanded')).toBe('false');
+
+    fireEvent.click(toggleButton);
+
+    expect(screen.getByRole('button', { name: /close menu/i }).getAttribute('aria-expanded')).toBe(
+      'true'
+    );
+    expect(screen.getByText(/closeicon/i)).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: /close menu/i }));
+    expect(screen.getByRole('button', { name: /open menu/i }).getAttribute('aria-expanded')).toBe(
+      'false'
+    );
   });
 });

@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { toast } from 'sonner';
 import type { ReactElement } from 'react';
 import type { ExportFormat } from '../types';
 import { getPlaceholderSnippet } from '../utils';
@@ -6,6 +8,7 @@ import { useTranslation } from '@/context/TranslationContext';
 const EXPORT_FORMATS: { value: ExportFormat; labelKey: string }[] = [
   { value: 'markdown', labelKey: 'markdown' },
   { value: 'html', labelKey: 'html' },
+  { value: 'action', labelKey: 'action' },
 ];
 
 export function ExportPanel({
@@ -14,6 +17,7 @@ export function ExportPanel({
   copied,
   copyStatusMessage,
   hasUsername,
+  username,
   onFormatChange,
   onCopy,
 }: {
@@ -22,15 +26,99 @@ export function ExportPanel({
   copied: boolean;
   copyStatusMessage: string;
   hasUsername: boolean;
+  username: string;
   onFormatChange: (format: ExportFormat) => void;
   onCopy: () => void | Promise<void>;
 }): ReactElement {
   const { t } = useTranslation();
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  const handleDownloadBadge = async () => {
+    if (!hasUsername || !snippet) return;
+
+    try {
+      setIsDownloading(true);
+
+      const urlMatch = snippet.match(/\((https?:\/\/[^)]+)\)/) || snippet.match(/src="([^"]+)"/);
+      let targetUrl = urlMatch ? urlMatch[1] : '';
+
+      if (!targetUrl) {
+        console.error('Could not parse the live API badge target URL from snippet.');
+        return;
+      }
+
+      targetUrl = targetUrl.replace(/&amp;/g, '&');
+
+      if (targetUrl.includes('https://commitpulse.vercel.app')) {
+        targetUrl = targetUrl.replace('https://commitpulse.vercel.app', window.location.origin);
+      }
+
+      if (targetUrl.includes('?')) {
+        targetUrl += '&refresh=true';
+      } else {
+        targetUrl += '?refresh=true';
+      }
+
+      const response = await fetch(targetUrl);
+      if (!response.ok) throw new Error('Network response failed to retrieve badge data stream.');
+
+      let svgText = await response.text();
+
+      const standaloneStyles = `
+        <style id="standalone-canvas-centering">
+          svg {
+            display: block !important;
+            margin: auto !important;
+            position: absolute !important;
+            top: 0 !important; bottom: 0 !important;
+            left: 0 !important; right: 0 !important;
+            max-width: 90vw !important;
+            max-height: 85vh !important;
+            width: 100% !important;
+            height: 100% !important;
+          }
+          html, body {
+            background-color: #0d1117 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+          }
+        </style>
+      `;
+
+      svgText = svgText.replace(/<svg[^>]*>/, (match) => `${match}${standaloneStyles}`);
+
+      const blob = new Blob([svgText], { type: 'image/svg+xml;charset=utf-8' });
+
+      const downloadUrl = URL.createObjectURL(blob);
+      const downloadLink = document.createElement('a');
+      downloadLink.href = downloadUrl;
+      downloadLink.download = `commitpulse-${username || 'badge'}.svg`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+
+      document.body.removeChild(downloadLink);
+      URL.revokeObjectURL(downloadUrl);
+      toast.success(t('dashboard.share.svg_downloaded'));
+    } catch (error) {
+      console.error('Failed to download custom vector badge image asset:', error);
+      toast.error(t('dashboard.share.failed'));
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const activeSnippet = hasUsername ? snippet : getPlaceholderSnippet(format);
   const formatLabel =
-    format === 'markdown' ? t('customize.export.markdown') : t('customize.export.html');
+    format === 'markdown'
+      ? t('customize.export.markdown')
+      : format === 'action'
+        ? t('customize.export.action')
+        : t('customize.export.html');
   const copyButtonLabel = hasUsername
-    ? t('customize.export.copy_aria_enabled', { format: formatLabel })
+    ? format === 'action'
+      ? 'Copy GitHub Action workflow to clipboard'
+      : t('customize.export.copy_aria_enabled', { format: formatLabel })
     : t('customize.export.copy_aria_disabled', { format: formatLabel });
 
   return (
@@ -67,6 +155,57 @@ export function ExportPanel({
             ))}
           </div>
 
+          {/* Centered High-Definition Vector Download Button */}
+          <button
+            type="button"
+            onClick={handleDownloadBadge}
+            disabled={!hasUsername || isDownloading || format === 'action'}
+            aria-label={
+              !hasUsername
+                ? t('customize.export.download_aria_disabled', {
+                    defaultValue: 'Add a GitHub username to enable image downloads',
+                  })
+                : format === 'action'
+                  ? t('customize.export.download_aria_action', {
+                      defaultValue: 'Download is not available in GitHub Action mode',
+                    })
+                  : t('customize.export.download_aria_enabled', { username: username || 'badge' })
+            }
+            className={`relative inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+              !hasUsername || isDownloading || format === 'action'
+                ? 'bg-gray-200/90 border border-black/10 text-gray-500 cursor-not-allowed dark:bg-white/10 dark:border-white/10 dark:text-white/35'
+                : 'bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/20 hover:scale-[1.03] active:scale-[0.97]'
+            }`}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className={`w-3.5 h-3.5 ${isDownloading ? 'animate-spin' : ''}`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              {isDownloading ? (
+                <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67" />
+              ) : (
+                <>
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </>
+              )}
+            </svg>
+            {format === 'action'
+              ? t('customize.export.download_not_available')
+              : isDownloading
+                ? t('customize.export.downloading')
+                : t('customize.export.download_badge')}
+          </button>
+
+          {/* Clipboard Copy Button */}
           <button
             id="copy-markdown-btn"
             onClick={onCopy}
@@ -114,7 +253,9 @@ export function ExportPanel({
                   <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
                   <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                 </svg>
-                {t('customize.export.copy_format', { format: formatLabel })}
+                {format === 'action'
+                  ? t('customize.export.copy_workflow', { defaultValue: 'Copy workflow' })
+                  : t('customize.export.copy_format', { format: formatLabel })}
               </>
             )}
           </button>
@@ -137,9 +278,54 @@ export function ExportPanel({
         </code>
       </div>
 
-      <p className="mt-4 text-[11px] text-zinc-500 dark:text-white/20 leading-relaxed">
-        {t('customize.export.footer_tip')}
-      </p>
+      <div className="mt-4 text-[11px] text-zinc-500 dark:text-white/20 leading-relaxed space-y-3">
+        {format === 'action' ? (
+          <>
+            <p>
+              <strong>Step 1:</strong> Save the workflow snippet above as{' '}
+              <code className="text-gray-700 dark:text-white/75">
+                .github/workflows/commitpulse.yml
+              </code>{' '}
+              to automatically fetch and commit your customized badge.
+            </p>
+            <p>
+              <strong>Step 2:</strong> Embed the generated SVG into your{' '}
+              <code className="text-gray-700 dark:text-white/75">README.md</code> using the markdown
+              below:
+            </p>
+            <div className="mt-2 bg-gray-100/80 dark:bg-white/[0.03] border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 flex items-center justify-between group">
+              <code className="text-emerald-600 dark:text-emerald-300 font-mono select-all">
+                ![CommitPulse](commitpulse.svg)
+              </code>
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText('![CommitPulse](commitpulse.svg)');
+                }}
+                className="text-gray-400 hover:text-emerald-500 transition-colors"
+                title="Copy Step 2 markdown"
+                aria-label="Copy Step 2 markdown snippet"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3.5 w-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+              </button>
+            </div>
+          </>
+        ) : (
+          <p>{t('customize.export.footer_tip')}</p>
+        )}
+      </div>
     </div>
   );
 }

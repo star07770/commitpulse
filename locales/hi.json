@@ -15,6 +15,8 @@
     "copyright": "© {{year}} CommitPulse. सभी अधिकार सुरक्षित।"
   },
   "landing": {
+    "empty_username_warning": "बैज लिंक कॉपी करने के लिए कृपया गिटहब यूजरनेम दर्ज करें।",
+    "max_length_warning": "गिटहब यूजरनेम सीमा समाप्त (अधिकतम 39 वर्ण)",
     "title": "अपनी योगदान कहानी\nको बेहतर बनाएं।",
     "subtitle": "फ्लैट ग्रिड्स से समझौता न करें। उच्च-गुणवत्ता वाले, 3D आइसोमेट्रिक मोनोलिथ उत्पन्न करें जो आपके कोडिंग लय को पेशेवर सटीकता के साथ दिखाते हैं।",
     "watch_dashboard": "डैशबोर्ड देखें",
@@ -82,13 +84,21 @@
       "sync_year": "सिंक वर्ष",
       "clear_custom": "कस्टम रंग साफ़ करें",
       "theme_presets": "थीम प्रीसेट",
-      "color_overrides": "कस्टम रंग ओवरराइड"
+      "color_overrides": "कस्टम रंग ओवरराइड",
+      "font": "फ़ॉन्ट",
+      "custom_font_option": "कस्टम गूगल फ़ॉन्ट...",
+      "custom_font_placeholder": "उदा. Orbitron, Space Mono, Inter"
     },
     "export": {
       "snippet_title": "एक्सपोर्ट स्निपेट",
       "snippet_desc": "लाइव बैज कॉन्फ़िगरेशन को बदले बिना प्रारूप स्विच करें।",
       "markdown": "मार्कडाउन",
       "html": "एचटीएमएल",
+      "action": "GitHub Action",
+      "download_badge": "बैज डाउनलोड करें",
+      "downloading": "डाउनलोड हो रहा है...",
+      "download_not_available": "डाउनलोड उपलब्ध नहीं है",
+      "copy_workflow": "वर्कफ़्लो कॉपी करें",
       "copy_format": "{{format}} कॉपी करें",
       "copied": "कॉपी किया गया!",
       "copy_aria_disabled": "निर्यात स्निपेट {{format}} कॉपी करने के लिए गिटहब यूजरनेम जोड़ें",

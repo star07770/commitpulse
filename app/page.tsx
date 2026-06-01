@@ -9,9 +9,10 @@ import { CommitPulseLogo } from '@/components/commitpulse-logo';
 import { CustomizeCTA } from './components/CustomizeCTA';
 import { useRecentSearches } from '@/hooks/useRecentSearches';
 import { useTranslation } from '@/context/TranslationContext';
-import { SuccessGuide } from './components/SuccessGuide';
-import { Footer } from './components/Footer';
-import { FeatureCard } from './components/FeatureCard';
+import { Footer } from '@/app/components/Footer';
+
+import { FeatureCard, FeatureCardsSection } from '@/components/FeatureCards';
+import { WallOfLove } from '@/components/WallOfLove';
 
 const Icons = {
   Github: () => (
@@ -80,6 +81,13 @@ export default function LandingPage() {
 
 function LandingContent() {
   const { t } = useTranslation();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMounted(true);
+  }, []);
+
   const [username, setUsername] = useState('');
   const [copied, setCopied] = useState(false);
   const [svgContent, setSvgContent] = useState<string | null>(null);
@@ -216,24 +224,38 @@ function LandingContent() {
               }}
               className="mb-8 flex flex-col gap-4 md:flex-row"
             >
-              <div className="relative flex-1 flex items-center">
-                <input
-                  type="text"
-                  placeholder={t('landing.input_placeholder')}
-                  className="flex-1 rounded-xl border border-black/10 dark:border-[rgba(255,255,255,0.08)] bg-gray-50 dark:bg-[#111] px-5 py-3.5 text-sm text-black dark:text-white outline-none transition-all duration-200 placeholder:text-gray-400 dark:placeholder:text-[#A1A1AA] focus:outline-none focus:ring-2 focus:ring-[#00ffaa] focus:border-transparent"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-                {username.length > 0 ? (
-                  <button
-                    onClick={() => setUsername('')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-[#A1A1AA] transition-colors hover:text-white"
-                    aria-label={t('landing.clear_input')}
-                    type="button"
-                  >
-                    <X size={18} />
-                  </button>
-                ) : null}
+              <div className="relative flex-1 flex items-center flex-col">
+                <div className="relative flex-1 flex items-center w-full">
+                  <input
+                    type="text"
+                    suppressHydrationWarning
+                    placeholder={t('landing.input_placeholder')}
+                    className="flex-1 rounded-2xl border border-black/10 bg-white px-5 py-4 text-sm text-black outline-none transition-all duration-300 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent dark:border-white/10 dark:bg-black/60 dark:text-white dark:placeholder:text-gray-500 shadow-inner"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    maxLength={39}
+                  />
+                  {username.length > 0 ? (
+                    <button
+                      onClick={() => setUsername('')}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 transition-colors hover:text-black dark:text-white/65 dark:hover:text-white"
+                      aria-label={t('landing.clear_input')}
+                      type="button"
+                    >
+                      <X size={18} />
+                    </button>
+                  ) : null}
+                </div>
+                {mounted && username.length === 0 && (
+                  <p className="text-amber-500 text-xs mt-1 self-start pl-1">
+                    {t('landing.empty_username_warning')}
+                  </p>
+                )}
+                {username.length === 39 && (
+                  <p className="text-red-500 text-xs mt-1 self-start pl-1">
+                    {t('landing.max_length_warning')}
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -349,35 +371,180 @@ function LandingContent() {
 
         <div ref={guideRef}>
           <AnimatePresence>
-            {copied && <SuccessGuide markdown={markdown} onDismiss={() => setCopied(false)} />}
+            {copied && (
+              <SuccessGuide
+                markdown={markdown}
+                username={trimmedUsername}
+                onDismiss={() => setCopied(false)}
+              />
+            )}
           </AnimatePresence>
         </div>
 
         <CustomizeCTA />
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <FeatureCardsSection>
           <FeatureCard
             icon={<Icons.Zap />}
             accent="text-black dark:text-white"
+            accentColor="#10b981"
+            index={0}
             title={t('landing.features.sync_title')}
             desc={t('landing.features.sync_desc')}
           />
           <FeatureCard
             icon={<Icons.Copy />}
             accent="text-black dark:text-white"
+            accentColor="#8b5cf6"
+            index={1}
             title={t('landing.features.theme_title')}
             desc={t('landing.features.theme_desc')}
           />
           <FeatureCard
             icon={<Icons.Box />}
             accent="text-black dark:text-white"
+            accentColor="#06b6d4"
+            index={2}
             title={t('landing.features.isometric_title')}
             desc={t('landing.features.isometric_desc')}
           />
-        </div>
+        </FeatureCardsSection>
+
+        <WallOfLove />
 
         <Footer />
       </main>
     </div>
+  );
+}
+
+function SuccessGuide({
+  markdown,
+  username,
+  onDismiss,
+}: {
+  markdown: string;
+  username: string;
+  onDismiss: () => void;
+}) {
+  const { t } = useTranslation();
+  const steps = [
+    {
+      n: '01',
+      title: t('success_guide.step_1_title'),
+      body: t('success_guide.step_1_body'),
+    },
+    {
+      n: '02',
+      title: t('success_guide.step_2_title'),
+      body: t('success_guide.step_2_body'),
+    },
+    {
+      n: '03',
+      title: t('success_guide.step_3_title'),
+      body: t('success_guide.step_3_body'),
+    },
+    {
+      n: '04',
+      title: t('success_guide.step_4_title'),
+      body: t('success_guide.step_4_body'),
+    },
+  ];
+
+  return (
+    <motion.div
+      key="success-guide"
+      initial={{ opacity: 0, y: 32, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 24, scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 28 }}
+      className="mx-auto mb-12 max-w-4xl"
+    >
+      <div className="relative overflow-hidden rounded-xl border border-black/10 bg-white dark:border-[rgba(255,255,255,0.1)] dark:bg-[#0a0a0a]">
+        <div className="pointer-events-none absolute -top-24 left-1/2 h-48 w-3/4 -translate-x-1/2 rounded-full bg-white/3 blur-[80px]" />
+
+        <div className="flex items-start justify-between border-b border-black/10 px-8 pb-6 pt-8 dark:border-white/5">
+          <div className="flex items-center gap-4">
+            <span className="relative flex h-2 w-2 mt-1">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-black/40 opacity-40 dark:bg-white/70" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-black dark:bg-white shadow-[0_0_10px_rgba(255,255,255,0.9)]" />
+            </span>
+            <div>
+              <p className="mb-0.5 text-xs font-medium uppercase tracking-[0.2em] text-gray-500 dark:text-[#A1A1AA]">
+                {t('success_guide.markdown_copied')}
+              </p>
+              <h2 className="text-2xl font-extrabold tracking-tight text-black dark:text-white">
+                {t('success_guide.title')}
+              </h2>
+            </div>
+          </div>
+
+          <button
+            onClick={onDismiss}
+            className="ml-4 mt-1 shrink-0 rounded-xl p-2 text-gray-500 transition-all hover:bg-gray-100 hover:text-black dark:text-white/55 dark:hover:bg-white/5 dark:hover:text-white"
+            aria-label="Dismiss guide"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="grid gap-px border-b border-black/10 bg-black/5 dark:border-white/5 dark:bg-white/5 sm:grid-cols-2">
+          {steps.map((step, i) => (
+            <motion.div
+              key={step.n}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 * i, duration: 0.4 }}
+              className="flex gap-4 bg-white p-6 dark:bg-[#050505]"
+            >
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-black/10 bg-gray-100 text-xs font-bold tracking-widest text-gray-600 dark:border-[rgba(255,255,255,0.08)] dark:bg-[#111] dark:text-[#A1A1AA]">
+                {step.n}
+              </span>
+              <div>
+                <p className="mb-1 text-sm font-bold text-black dark:text-white">{step.title}</p>
+                <p className="text-sm leading-relaxed text-gray-600 dark:text-gray-500">
+                  {step.body}
+                </p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        <div className="px-8 py-6">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.15em] text-gray-500 dark:text-white/55">
+            {t('success_guide.copied_snippet_label')}
+          </p>
+          <div className="flex items-center gap-3 rounded-xl border border-black/10 bg-gray-100 px-4 py-3 font-mono text-sm dark:border-white/8 dark:bg-black/60">
+            <span className="shrink-0 select-none text-gray-500 dark:text-[#A1A1AA]">$</span>
+            <code className="flex-1 overflow-x-auto break-all leading-relaxed text-black dark:text-white/80">
+              {markdown}
+            </code>
+          </div>
+          <p className="mt-4 text-xs leading-relaxed text-gray-500 dark:text-white/55">
+            {t('success_guide.color_tip')}
+          </p>
+          <div className="mt-8 flex justify-center border-t border-black/10 pt-6 dark:border-white/5">
+            <Link href={`/dashboard/${username}`} onClick={() => trackUser(username)}>
+              <span className="border border-black/10 bg-gray-100 px-6 py-2.5 rounded-lg text-sm font-semibold text-black transition-all duration-200 hover:bg-gray-200 hover:scale-[1.01] active:scale-[0.99] dark:border-[rgba(255,255,255,0.15)] dark:bg-white dark:text-black dark:hover:bg-zinc-100">
+                {t('success_guide.watch_dashboard_btn')}
+              </span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }

@@ -15,6 +15,8 @@
     "copyright": "© {{year}} CommitPulse. Todos los derechos reservados."
   },
   "landing": {
+    "empty_username_warning": "Ingresa un usuario de GitHub para copiar el enlace de tu insignia.",
+    "max_length_warning": "Límite de usuario de GitHub alcanzado (máximo 39 caracteres)",
     "title": "Eleva tu historia\nde contribuciones.",
     "subtitle": "No te conformes con cuadrículas planas. Genera monolitos 3D isométricos de alta fidelidad que visualizan tu ritmo de programación con precisión profesional.",
     "watch_dashboard": "Ver panel",
@@ -84,13 +86,21 @@
       "sync_year": "Año de sincronización",
       "clear_custom": "Limpiar colores personalizados",
       "theme_presets": "Tema preestablecido",
-      "color_overrides": "Colores personalizados"
+      "color_overrides": "Colores personalizados",
+      "font": "Fuente",
+      "custom_font_option": "Fuente de Google personalizada...",
+      "custom_font_placeholder": "ej. Orbitron, Space Mono, Inter"
     },
     "export": {
       "snippet_title": "Fragmento de exportación",
       "snippet_desc": "Cambia de formato sin alterar la configuración de la insignia en vivo.",
       "markdown": "Markdown",
       "html": "HTML",
+      "action": "GitHub Action",
+      "download_badge": "Descargar insignia",
+      "downloading": "Descargando...",
+      "download_not_available": "Descarga no disponible",
+      "copy_workflow": "Copiar flujo de trabajo",
       "copy_format": "Copiar {{format}}",
       "copied": "¡Copiado!",
       "copy_aria_disabled": "Agrega un usuario de GitHub para habilitar la copia del fragmento de exportación {{format}}",

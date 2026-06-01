@@ -14,7 +14,19 @@ interface TooltipState {
   y: number;
 }
 
-export default function Heatmap({ data }: { data: ActivityData[] }) {
+interface HeatmapProps {
+  data: ActivityData[];
+  title?: string;
+  subtitle?: string;
+  emptyMessage?: string;
+}
+
+export default function Heatmap({
+  data,
+  title = 'Contribution Heatmap',
+  subtitle = 'Last 365 days',
+  emptyMessage = 'No recent activity to display',
+}: HeatmapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   const [tooltip, setTooltip] = useState<TooltipState | null>(null);
@@ -27,6 +39,7 @@ export default function Heatmap({ data }: { data: ActivityData[] }) {
   }
 
   const naturalWidth = weeks.length * (CELL + GAP) - GAP;
+  const hasData = data.length > 0 && data.some((d) => d.count > 0);
 
   // Recalculate scale whenever the card resizes
   useEffect(() => {
@@ -80,13 +93,13 @@ export default function Heatmap({ data }: { data: ActivityData[] }) {
         className="p-6 rounded-xl bg-white dark:bg-[#0a0a0a] border border-black/10 dark:border-[rgba(255,255,255,0.08)] shadow-sm"
       >
         {/* Header */}
-        <h3 className=" text-sm font-semibold text-zinc-900 dark:text-white tracking-tight my-1">
-          {t('dashboard.heatmap.title')}
+        <h3 className="my-1 text-sm font-semibold tracking-tight text-gray-900 dark:text-white">
+          {title || t('dashboard.heatmap.title')}
         </h3>
         <div className="flex justify-between items-end mb-4">
           <div>
-            <p className="text-xs text-zinc-500 dark:text-[#A1A1AA] mt-0.5">
-              {t('dashboard.heatmap.last_365')}
+            <p className="mt-0.5 text-xs text-[#A1A1AA]">
+              {subtitle || t('dashboard.heatmap.last_365')}
             </p>
           </div>
           <div className="flex items-center gap-2 text-xs text-zinc-500 dark:text-[#A1A1AA]">
@@ -104,32 +117,38 @@ export default function Heatmap({ data }: { data: ActivityData[] }) {
         </div>
 
         {/* Scale wrapper */}
-        <div ref={containerRef} className="w-full overflow-hidden">
-          <div
-            style={{
-              width: naturalWidth,
-              transformOrigin: 'top left',
-              transform: `scale(${scale})`,
-              height: (7 * (CELL + GAP) - GAP) * scale,
-            }}
-          >
-            <div className="flex " style={{ gap: GAP }}>
-              {weeks.map((week, wIndex) => (
-                <div key={wIndex} className="flex flex-col" style={{ gap: GAP }}>
-                  {week.map((day, dIndex) => (
-                    <div
-                      key={dIndex}
-                      onMouseEnter={(e) => handleMouseEnter(e, day)}
-                      onMouseLeave={handleMouseLeave}
-                      className={`rounded-sm cursor-pointer transition-all duration-150 hover:brightness-125 hover:scale-125 ${getIntensityColor(day.intensity)}`}
-                      style={{ width: CELL, height: CELL }}
-                    />
-                  ))}
-                </div>
-              ))}
+        {hasData ? (
+          <div ref={containerRef} className="w-full overflow-hidden">
+            <div
+              style={{
+                width: naturalWidth,
+                transformOrigin: 'top left',
+                transform: `scale(${scale})`,
+                height: (7 * (CELL + GAP) - GAP) * scale,
+              }}
+            >
+              <div className="flex " style={{ gap: GAP }}>
+                {weeks.map((week, wIndex) => (
+                  <div key={wIndex} className="flex flex-col" style={{ gap: GAP }}>
+                    {week.map((day, dIndex) => (
+                      <div
+                        key={dIndex}
+                        onMouseEnter={(e) => handleMouseEnter(e, day)}
+                        onMouseLeave={handleMouseLeave}
+                        className={`rounded-sm cursor-pointer transition-all duration-150 hover:brightness-125 hover:scale-125 ${getIntensityColor(day.intensity)}`}
+                        style={{ width: CELL, height: CELL }}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="flex h-[120px] items-center justify-center rounded-lg border border-dashed border-black/10 text-sm text-[#A1A1AA] dark:border-[rgba(255,255,255,0.08)]">
+            {emptyMessage}
+          </div>
+        )}
       </motion.div>
 
       {/* Tooltip rendered at viewport level — unaffected by scale/overflow */}

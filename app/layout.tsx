@@ -3,8 +3,10 @@ import { Inter } from 'next/font/google';
 import { Analytics } from '@vercel/analytics/next';
 import Navbar from './components/navbar';
 import BrandParticles from '@/components/BrandParticles';
-import { Providers } from './providers';
+import ReturnToTop from '@/components/ReturnToTop';
 import type { Metadata } from 'next';
+import ScrollRestoration from './components/ScrollRestoration';
+import { Providers } from './providers';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -66,15 +68,33 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.className} bg-white text-black dark:bg-black dark:text-white transition-colors duration-300`}
-      >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                const storedTheme = window.localStorage.getItem('theme');
+                if (storedTheme === 'light') {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.style.colorScheme = 'light';
+                } else {
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.style.colorScheme = 'dark';
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body className={inter.className}>
         <Providers>
+          <ScrollRestoration />
           <BrandParticles />
           <Navbar />
-          <div className="pt-24 sm:pt-28 relative z-10">{children}</div>
+          <div className="relative z-10">{children}</div>
+          <ReturnToTop />
+          <Analytics />
         </Providers>
-        <Analytics />
       </body>
     </html>
   );

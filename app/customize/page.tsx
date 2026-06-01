@@ -7,6 +7,8 @@ import { motion } from 'framer-motion';
 import { ControlsPanel } from './components/ControlsPanel';
 import { AdvancedSettingsPanel } from './components/AdvancedSettingsPanel';
 import { ExportPanel } from './components/ExportPanel';
+import InteractiveViewer from '@/components/InteractiveViewer';
+import DOMPurify from 'dompurify';
 import type {
   ExportFormat,
   Scale,
@@ -17,7 +19,7 @@ import type {
   Timezone,
   Font,
 } from './types';
-import { getExportSnippet, stripHash, buildQueryParams } from './utils';
+import { getExportSnippet, buildQueryParams } from './utils';
 import { useTranslation } from '@/context/TranslationContext';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
@@ -66,12 +68,13 @@ function CustomizeContent(): ReactElement {
   const [exportFormat, setExportFormat] = useState<ExportFormat>('markdown');
   const [copied, setCopied] = useState(false);
   const [copyStatusMessage, setCopyStatusMessage] = useState('');
+  const [svgContent, setSvgContent] = useState('');
+  const [svgState, setSvgState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const copyResetTimeoutRef = useRef<number | null>(null);
   const trimmedUsername = username.trim();
   const hasUsername = trimmedUsername.length > 0;
-  const isAutoTheme = theme === 'auto';
   const isRandomTheme = theme === 'random';
-  const skipsCustomColors = isAutoTheme || isRandomTheme;
 
   useEffect(() => {
     return () => {
@@ -130,6 +133,88 @@ function CustomizeContent(): ReactElement {
     timezone,
   });
   const previewSrc = `/api/streak?${queryString}`;
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setErrorMessage(null);
+    if (!hasUsername) {
+      setSvgContent('');
+      setSvgState('idle');
+      return;
+    }
+
+    setSvgState('loading');
+    const controller = new AbortController();
+
+    fetch(previewSrc, { signal: controller.signal })
+      .then(async (res) => {
+        const text = await res.text();
+        if (!res.ok) {
+          setSvgContent('');
+          setSvgState('error');
+          if (res.status === 404 || res.status === 400) {
+            setErrorMessage('GitHub user not found');
+          } else if (res.status === 429) {
+            setErrorMessage('Rate limit exceeded. Please try again later.');
+          } else {
+            setErrorMessage('Failed to load badge');
+          }
+          return;
+        }
+        return text;
+      })
+      .then((text) => {
+        if (!text) return;
+        // Sanitize SVG using DOMPurify with the SVG profile.
+        // - Forbid risky tags like foreignObject and embedded content
+        // - Forbid xlink:href to avoid external references
+        // - Use a conservative URI whitelist to prevent javascript: URIs
+        const sanitized = DOMPurify.sanitize(text, {
+          USE_PROFILES: { svg: true },
+          ADD_TAGS: ['animate', 'style'],
+          ADD_ATTR: [
+            'fill',
+            'fill-opacity',
+            'stroke',
+            'stroke-width',
+            'stroke-opacity',
+            'x1',
+            'y1',
+            'x2',
+            'y2',
+            'stop-color',
+            'stop-opacity',
+            'offset',
+            'transform-origin',
+            'transform-box',
+            'transform',
+            'attributeName',
+            'from',
+            'to',
+            'dur',
+            'repeatCount',
+            'id',
+            'class',
+            'href',
+          ],
+          FORBID_TAGS: ['foreignObject', 'iframe', 'object', 'embed', 'script'],
+          FORBID_ATTR: ['xlink:href'],
+          ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|data):|#)/i,
+        });
+
+        setSvgContent(sanitized as string);
+        setSvgState('loaded');
+        setErrorMessage(null);
+      })
+      .catch((err) => {
+        if (err.name === 'AbortError') return;
+        setSvgState('error');
+        setErrorMessage('Failed to load badge');
+      });
+
+    return () => controller.abort();
+  }, [previewSrc, hasUsername]);
+
   const exportSnippet = getExportSnippet(exportFormat, queryString);
 
   const announceCopyStatus = useCallback((message: string): void => {
@@ -238,6 +323,7 @@ function CustomizeContent(): ReactElement {
               textHex={textHex}
               scale={scale}
               speed={speed}
+              font={font}
               year={year}
               radius={radius}
               size={size}
@@ -248,6 +334,7 @@ function CustomizeContent(): ReactElement {
               onTextHexChange={setTextHex}
               onScaleChange={setScale}
               onSpeedChange={setSpeed}
+              onFontChange={setFont}
               onYearChange={setYear}
               onRadiusChange={setRadius}
               onSizeChange={setSize}
@@ -276,22 +363,67 @@ function CustomizeContent(): ReactElement {
                 {/* Glow ring */}
                 <div className="absolute -inset-px bg-gradient-to-br from-emerald-500/20 to-purple-500/20 rounded-[1.5rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 blur-lg pointer-events-none" />
 
-                <div className="relative bg-zinc-50 dark:bg-[#050505] border border-black/10 dark:border-white/8 rounded-[1.25rem] overflow-hidden flex items-center justify-center p-6 min-h-[280px]">
+                <InteractiveViewer className="relative bg-zinc-50 dark:bg-[#050505] border border-black/10 dark:border-white/8 rounded-[1.25rem] flex items-center justify-center p-6 min-h-[280px]">
                   {/* Scanning line effect behind image */}
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent via-emerald-500/3 to-transparent animate-[pulse_3s_ease-in-out_infinite] pointer-events-none" />
 
                   {hasUsername ? (
-                    <>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        key={previewSrc}
-                        src={previewSrc}
-                        alt="CommitPulse live preview"
-                        width={600}
-                        height={420}
-                        className="max-w-full h-auto drop-shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_20px_60px_rgba(0,0,0,0.6)] transition-opacity duration-300"
-                      />
-                    </>
+                    <div className="w-full flex items-center justify-center">
+                      {svgState === 'loading' && (
+                        <div className="h-[240px] w-full max-w-[600px] rounded-2xl bg-black/5 dark:bg-white/5 animate-pulse flex items-center justify-center text-sm text-gray-500 dark:text-white/40">
+                          Loading preview...
+                        </div>
+                      )}
+                      {svgState === 'error' && errorMessage === 'GitHub user not found' && (
+                        <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
+                          <div className="flex h-16 w-16 items-center justify-center rounded-3xl border border-red-500/20 bg-red-500/10 shadow-inner">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-8 w-8 text-red-500"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">
+                              GitHub user not found
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                              Please check the username and try again.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {svgState === 'error' && errorMessage !== 'GitHub user not found' && (
+                        <div className="flex flex-col items-center justify-center gap-2 text-center py-8">
+                          <p className="text-sm font-semibold text-red-500 dark:text-red-400">
+                            Failed to load badge
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-white/45">
+                            The API may be unavailable. Please try again.
+                          </p>
+                        </div>
+                      )}
+                      {svgState === 'loaded' && svgContent && (
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ duration: 0.5, ease: 'easeOut' }}
+                          className="cp-svg-container w-full max-w-[600px] drop-shadow-[0_30px_60px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_30px_60px_rgba(0,0,0,0.5)] [&>svg]:w-full [&>svg]:h-auto"
+                          dangerouslySetInnerHTML={{ __html: svgContent }}
+                        />
+                      )}
+                      {svgState === 'loaded' && !svgContent && errorMessage && (
+                        <p className="text-red-400 text-sm text-center">{errorMessage}</p>
+                      )}
+                    </div>
                   ) : (
                     <div className="relative z-10 flex w-full max-w-xl flex-col items-center justify-center rounded-[1.25rem] border border-dashed border-black/15 dark:border-white/10 bg-black/[0.01] dark:bg-white/[0.02] px-6 py-12 text-center">
                       <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.04] text-emerald-600 dark:text-emerald-300/70">
@@ -318,7 +450,7 @@ function CustomizeContent(): ReactElement {
                       </p>
                     </div>
                   )}
-                </div>
+                </InteractiveViewer>
               </div>
 
               <p className="mt-3 text-[11px] text-zinc-400 dark:text-white/20 text-center">
@@ -336,6 +468,7 @@ function CustomizeContent(): ReactElement {
               copied={copied}
               copyStatusMessage={copyStatusMessage}
               hasUsername={hasUsername}
+              username={trimmedUsername}
               onFormatChange={setExportFormat}
               onCopy={copyExportSnippet}
             />
