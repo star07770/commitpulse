@@ -5,9 +5,15 @@ interface ShareButtonsProps {
   title?: string;
 }
 
-export default function ShareButtons({ url, title = '' }: ShareButtonsProps) {
-  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
-  const twitterUrl = `https://x.com/intent/tweet?url=${encodeURIComponent(url)}` + 
+export default function ShareButtons({
+  url,
+  title = '',
+}: ShareButtonsProps) {
+  const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+    url
+  )}`;
+  const twitterUrl =
+    `https://x.com/intent/tweet?url=${encodeURIComponent(url)}` +
     (title ? `&text=${encodeURIComponent(title)}` : '');
 
   return (
@@ -20,7 +26,6 @@ export default function ShareButtons({ url, title = '' }: ShareButtonsProps) {
       >
         <FaLinkedin size={24} aria-hidden="true" />
       </a>
-
       <a
         href={twitterUrl}
         target="_blank"
