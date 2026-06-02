@@ -22,7 +22,6 @@ import type {
 } from './types';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getExportSnippet, buildQueryParams } from './utils';
-import { validateGitHubUsername } from '@/lib/github';
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
