@@ -280,14 +280,14 @@ const baseStreakParamsSchema = z.object({
     .optional()
     .refine(
       (val) => {
-        if (!val) return true;
-        const parsed = Number(val);
-        return !isNaN(parsed) && Number.isInteger(parsed) && parsed >= 0 && parsed <= 7;
+        if (val === undefined || val === '') return true;
+        return /^\d+$/.test(val) && Number(val) >= 0 && Number(val) <= 7;
       },
       { message: 'grace must be an integer between 0 and 7' }
     )
-    .transform(toGraceValue)
+    .transform((val) => (val === undefined || val === '' ? 1 : Number(val)))
     .default(1),
+
   mode: z.enum(['commits', 'loc']).catch('commits').default('commits'),
   repo: z.string().optional(),
   org: z
@@ -577,9 +577,9 @@ export const notifyGetSchema = z.object({
 
 export type StreakParams = z.infer<typeof streakParamsSchema>;
 export type GithubParams = z.infer<typeof githubParamsSchema>;
+export type CompareParams = z.infer<typeof compareParamsSchema>;
 export type OgParams = z.infer<typeof ogParamsSchema>;
 export type StatsParams = z.infer<typeof statsParamsSchema>;
 export type WrappedParams = z.infer<typeof wrappedParamsSchema>;
-export type CompareParams = z.infer<typeof compareParamsSchema>;
 export type NotifyPostParams = z.infer<typeof notifyPostSchema>;
 export type NotifyGetParams = z.infer<typeof notifyGetSchema>;
