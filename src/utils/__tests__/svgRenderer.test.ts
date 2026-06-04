@@ -1,11 +1,11 @@
-import { describe, it, expect } from '@jest/globals'; // Add this line if using Jest (or change to 'vitest' if using Vitest)
+import { describe, it, expect } from '@jest/globals';
 import { generateOptimizedSvg, ContributionNode } from '../svgRenderer';
 
 describe('generateOptimizedSvg', () => {
   const mockData: ContributionNode[] = [
     { date: '2026-01-01', count: 0, x: 0, y: 0 },
     { date: '2026-01-02', count: 5, x: 0, y: 1 },
-    { date: '2026-01-03', count: 12, x: 1, y: 1 }, // Tests occlusion culling logic
+    { date: '2026-01-03', count: 12, x: 1, y: 1 },
   ];
 
   // Unit Test
@@ -29,4 +29,4 @@ describe('generateOptimizedSvg', () => {
     const result = generateOptimizedSvg(mockData);
     expect(result).toMatchSnapshot();
   });
-}); // <--- Added the missing closing bracket and parenthesis here!
+});
