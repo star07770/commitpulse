@@ -75,6 +75,9 @@ export interface ContributionCalendar {
   /** Array of weekly contribution data covering the queried date range. */
   weeks: ContributionWeek[];
 
+  /** Optional aggregate repository contribution count preserved from mocked or extended calendar payloads. */
+  repoContributions?: number;
+
   /** Timestamp of the last successful GraphQL API sync. Used for delta updates. */
   lastSyncedAt?: string;
 }
@@ -95,6 +98,8 @@ export interface RepoContribution {
 export interface ExtendedContributionData {
   calendar: ContributionCalendar;
   repoContributions: RepoContribution[];
+  totalPRs?: number;
+  totalIssues?: number;
   isOfflineFallback?: boolean;
 }
 
@@ -175,8 +180,8 @@ export interface BadgeParams {
   /** Language/locale code for stat labels (e.g. 'en', 'fr', 'ja'). Defaults to 'en'. */
   lang?: string;
 
-  /** Badge layout variant. 'default' shows the isometric monolith; 'monthly' shows month-over-month stats; 'heatmap' shows a flat 2D contribution heatmap; 'pulse' shows a heartbeat sparkline. */
-  view?: 'default' | 'monthly' | 'heatmap' | 'pulse';
+  /** Badge layout variant. 'default' shows the isometric monolith; 'monthly' shows month-over-month stats; 'heatmap' shows a flat 2D contribution heatmap; 'pulse' shows a heartbeat sparkline; 'languages' shows a 3D isometric city of top programming languages. */
+  view?: 'default' | 'monthly' | 'heatmap' | 'pulse' | 'languages';
 
   /** Format for the monthly delta indicator. 'percent' shows %, 'absolute' shows raw count, 'both' shows both. */
   delta_format?: 'percent' | 'absolute' | 'both';
@@ -232,6 +237,7 @@ export interface BadgeParams {
   animate?: boolean;
   glow?: boolean;
   isOfflineFallback?: boolean;
+  badges?: boolean;
 
   /** @internal Temporary property to track custom gradient ID during SVG generation. */
   __customGradientId?: string;
