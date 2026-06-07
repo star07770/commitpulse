@@ -10,7 +10,6 @@ vi.mock('framer-motion', () => ({
       <div {...props}>{children}</div>
     ),
   },
-
 }));
 
 const parsed = {
@@ -37,7 +36,6 @@ describe('ResumePreviewForm - Accessibility compliance', () => {
       />
     );
 
-    // Form inputs should have associated visible text labels
     expect(screen.getByText('Full Name')).toBeInTheDocument();
     expect(screen.getByText('Email')).toBeInTheDocument();
     expect(screen.getByText('Skills')).toBeInTheDocument();
@@ -57,6 +55,7 @@ describe('ResumePreviewForm - Accessibility compliance', () => {
     );
 
     const nameInput = screen.getByDisplayValue('John Doe');
+
     expect(nameInput).toHaveClass('focus:ring-2');
     expect(nameInput).toHaveClass('focus:ring-emerald-500');
     expect(nameInput).toHaveClass('outline-none');
@@ -73,11 +72,12 @@ describe('ResumePreviewForm - Accessibility compliance', () => {
       />
     );
 
-    // Initially not disabled
     const saveButton = screen.getByRole('button', { name: /Save Profile/i });
+
     expect(saveButton).not.toBeDisabled();
   });
-    it('renders heading with correct text for screen reader document navigation', () => {
+
+  it('renders heading with correct text for screen reader document navigation', () => {
     render(
       <ResumePreviewForm
         githubUsername="john"
@@ -89,6 +89,7 @@ describe('ResumePreviewForm - Accessibility compliance', () => {
     );
 
     const heading = screen.getByRole('heading', { level: 3 });
+
     expect(heading).toBeInTheDocument();
     expect(heading.textContent).toContain('Review Parsed Data');
   });
