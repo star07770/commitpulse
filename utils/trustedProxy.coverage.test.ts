@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ip4ToInt, isIPv4, isIPv4InCidr, isTrustedProxy } from './trustedProxy';
 
-describe('Trusted Proxy Theme Contrast Cohesion', () => {
+describe('Trusted Proxy Utilities', () => {
   it('validates IPv4 addresses correctly', () => {
     expect(isIPv4('192.168.1.1')).toBe(true);
     expect(isIPv4('999.999.999.999')).toBe(false);
